@@ -261,6 +261,7 @@ func (sb *sandbox) rmLBBackend(ip, vip net.IP, fwMark uint32, ingressPorts []*Po
 }
 
 const ingressChain = "DOCKER-INGRESS"
+const userChain = "DOCKER-USER"
 
 var (
 	ingressOnce     sync.Once
@@ -446,6 +447,32 @@ func arrangeIngressFilterRule() {
 		if err := iptables.RawCombinedOutput("-I", "FORWARD", "-j", ingressChain); err != nil {
 			logrus.Warnf("failed to add jump rule to ingressChain in filter table: %v", err)
 		}
+	}
+}
+
+
+// arrangeUserFilterChain And rules
+func arrangeUserFilterChain() {
+	// // Sanity check.
+	// if config.EnableIPTables == false {
+	// 	return nil, nil, nil, errors.New("cannot create new chains, EnableIPTable is disabled")
+	// }
+
+	_, err := iptables.NewChain(userChain, iptables.Filter, false)
+	if err != nil {
+		logrus.Warnf("Failed to create %s chain: %v", userChain, err)
+		return
+	}
+
+	if err = iptables.AddReturnRule(userChain); err != nil {
+		logrus.Warnf("Failed to add the RETURN rule for %s: %v", userChain, err)
+	}
+
+	// d.Lock()
+	err = iptables.EnsureJumpRule("FORWARD", userChain)
+	// d.Unlock()
+	if err != nil {
+		logrus.Warnf("Failed to create the jump rule for %s: %v", userChain, err)
 	}
 }
 

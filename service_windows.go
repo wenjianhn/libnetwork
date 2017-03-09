@@ -13,3 +13,6 @@ func (sb *sandbox) populateLoadbalancers(ep *endpoint) {
 
 func arrangeIngressFilterRule() {
 }
+
+func arrangeUserFilterChain() {
+}

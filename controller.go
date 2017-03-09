@@ -235,6 +235,8 @@ func New(cfgOptions ...config.Option) (NetworkController, error) {
 		return nil, err
 	}
 
+	arrangeUserFilterChain()
+
 	return c, nil
 }
 
